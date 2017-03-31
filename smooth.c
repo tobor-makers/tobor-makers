@@ -2,9 +2,13 @@
 #pragma config(Motor, motorB, motorRight, tmotorNXT, PIDControl, driveRight, encoder)
 #pragma config(Motor, motorC, motorLeft,  tmotorNXT, PIDControl, driveLeft,  encoder)
 
+// See https://punpun.xyz/f747.pdf for more information.
+
 task main() {
-	const int offset = 50;
-	const int kp = 230;
+	// offset is the avarage of the light-sensor measurements of "total white" and "total black".
+	// "total white" being a value 61, and "total black" being a value of 35.
+	const int offset = 48;
+	const int kp = 6;
 	const int ki = 0;
 	const int kd = 0;
 	const int tp = 30;
