@@ -13,13 +13,17 @@ task main() {
 	const int ki = 0;
 	const int kd = 0;
 
-	// tp (target power)  is the power level of both motors when the robot is supposed to go
+	// tp (target power) is the power level of both motors when the robot is supposed to go
 	// straight ahead, which it does when the error has a value of 0.
 	const int tp = 30;
 
 	// integral is the running sum of the error.
 	int integral = 0;
+
+	// derivative is the current error minus the previous error.
 	int derivative = 0;
+
+	// These two should be fairly self-explanatory.
 	int lastError = 0;
 	int turn = 0;
 
