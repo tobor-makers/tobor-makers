@@ -10,7 +10,7 @@ task main() {
 	const int offset = 48;
 
 	// kp (the konstant for the proportional controller) is calculated using `0.60*kc`,
-	// kc (critical gain) is a value where the robot follows the line and gives noticeable
+	// kc (critical gain) being a value where the robot follows the line and gives noticeable
 	// oscillation but not really wild a one. For us that value is TODO.
 	const int kp = 6;
 
@@ -35,6 +35,7 @@ task main() {
 		int error = SensorValue[sensorLight] - offset;
 		integral += error;
 		derivative = error - lastError;
+
 		turn = kp*error + ki*integral + kd*derivative;
 		turn = turn/100;
 
