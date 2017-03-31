@@ -9,7 +9,11 @@ task main() {
 	// "total white" being a value 61, and "total black" being a value of 35.
 	const int offset = 48;
 
+	// kp (the konstant for the proportional controller) is calculated using `0.60*kc`,
+	// kc (critical gain) is a value where the robot follows the line and gives noticeable
+	// oscillation but not really wild a one. For us that value is TODO.
 	const int kp = 6;
+
 	const int ki = 0;
 	const int kd = 0;
 
