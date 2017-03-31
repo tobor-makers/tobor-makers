@@ -8,11 +8,16 @@ task main() {
 	// offset is the avarage of the light-sensor measurements of "total white" and "total black".
 	// "total white" being a value 61, and "total black" being a value of 35.
 	const int offset = 48;
+
 	const int kp = 6;
 	const int ki = 0;
 	const int kd = 0;
+
+	// tp (target power)  is the power level of both motors when the robot is supposed to go
+	// straight ahead, which it does when the error has a value of 0.
 	const int tp = 30;
 
+	// integral is the running sum of the error.
 	int integral = 0;
 	int derivative = 0;
 	int lastError = 0;
