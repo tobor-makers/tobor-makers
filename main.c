@@ -36,14 +36,9 @@ const int INBOX = 5;
 * See https://punpun.xyz/f747.pdf for more information about PID.
 */
 // offset is the avarage of the light-sensor measurements of "total white" and "total black".
-const int whiteL = 68;
-const int whiteR = 52;
-const int blackL = 27;
-const int blackR = 38;
-
-// offset is the avarage of the light-sensor measurements of "total white" and "total black".
-int offsetL = (whiteL+blackL) / 2;
-int offsetR = (whiteR+blackR) / 2;
+int offsetL = 0;
+int offsetR = 0;
+getOffset();
 // kp (the konstant for the proportional controller) is calculated using `0.60*kc`,
 // kc (critical gain) being a value where the robot follows the line and gives noticeable
 // oscillation but not really a wild one.
@@ -65,6 +60,39 @@ int turn = 0;
 // ---------
 // FUNCTIONS
 // ---------
+
+void getOffset() {
+	// tp (target power) is the power level of the motors.
+	const int tp = 10;
+
+	int blackL = 100;
+	int blackR = 100;
+	int whiteL = 0;
+	int whiteR = 0;
+
+	motor[motorL] = tp;
+	motor[motorR] = -tp;
+	while (SensorValue[sensorR] == 0) {}
+	for (int i=0; i<9000; i++) {
+			if (SensorValue[sensorL] > whiteL) {
+				whiteL = SensorValue[sensorL];
+			} else if (SensorValue[sensorL] <= blackL) {
+				blackL = SensorValue[sensorL];
+			}
+
+			if (SensorValue[sensorR] > whiteR) {
+				whiteR = SensorValue[sensorR];
+			} else if (SensorValue[sensorR] <= blackR) {
+				blackR = SensorValue[sensorR];
+			}
+		  wait1Msec(1);
+	}
+
+	motor[motorL] = 0;
+	motor[motorR] = 0;
+	offsetL = (blackL+whiteL)/2;
+	offsetR = (blackR+whiteR)/2;
+}
 
 void turnLeft () {
 	motor[motorL] = -15;
