@@ -16,7 +16,8 @@ typedef enum {
 	CROSSROAD = 0,
 	MOVING = 1,
 	STOPPED = 2,
-	RIP = 3
+	RIP = 3,
+	INIT = 4
 } State;
 
 /*
@@ -25,7 +26,7 @@ typedef enum {
 const int VIEW_DIST = 25;
 const int L_TRESHHOLD = 40; // 50
 const int R_TRESHHOLD = 20; // 30
-State STATE = STOPPED;
+State STATE = INIT;
 /*
 * Bluetooth gobals
 */
@@ -38,7 +39,7 @@ const int INBOX = 5;
 // offset is the avarage of the light-sensor measurements of "total white" and "total black".
 int offsetL = 0;
 int offsetR = 0;
-getOffset();
+
 // kp (the konstant for the proportional controller) is calculated using `0.60*kc`,
 // kc (critical gain) being a value where the robot follows the line and gives noticeable
 // oscillation but not really a wild one.
@@ -61,7 +62,7 @@ int turn = 0;
 // FUNCTIONS
 // ---------
 
-void getOffset() {
+void initState() {
 	// tp (target power) is the power level of the motors.
 	const int tp = 10;
 
@@ -295,6 +296,10 @@ task main()
 	bool running = true;
 	while(running) {
 		switch(STATE) {
+			case INIT:
+				initState();
+				STATE = STOPPED;
+				break;
 			case CROSSROAD:
 				displayBigTextLine(0, "Crossroad");
 				crossroadState();
