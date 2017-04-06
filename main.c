@@ -66,6 +66,28 @@ int turn = 0;
 // FUNCTIONS
 // ---------
 
+void turnLeft () {
+	motor[motorL] = -15;
+	motor[motorR] = 15;
+	while (SensorValue[sensorR] >= R_TRESHHOLD) {
+		wait1Msec(1);
+  }
+  motor[motorL] = 0;
+  motor[motorR] = 0;
+  wait1Msec(50);
+}
+
+void turnRight() {
+	motor[motorL] = 15;
+	motor[motorR] = -15;
+	while (SensorValue[sensorL] >= L_TRESHHOLD) {
+		wait1Msec(1);
+  }
+  motor[motorL] = 0;
+  motor[motorR] = 0;
+  wait1Msec(50);
+}
+
 /**
 * @brief Checks for bluetooth messages and sets command string
 * @param command String to hold the bluetooth message
@@ -214,16 +236,19 @@ void crossroadState() {
 		return;
 	}
 
-	 // if commanded left and there is a left
-	if (command == "LEFT" && SensorValue[sensorL] < L_TRESHHOLD) {
-		// MOVE LEFT
+	// if commanded left and there is a left
+	if (command == "LEFT") {
+		turnLeft();
+		STATE = MOVING;
 		displayBigTextLine(4, "LEFT");
 	// If commanded right and there is a right
-	} else if (command == "RIGHT" && SensorValue[sensorR] < R_TRESHHOLD) {
-		// MOVE RIGHT
+	} else if (command == "RIGHT") {
+		turnRight();
+		STATE = MOVING;
 		displayBigTextLine(4, "LEFT");
 	} else if (command == "FIRE") {
 		// MAKE ROBOT CHOOSE
+		turnRight();
 		displayBigTextLine(4, "LEFT OF RIGHT");
 	}
 
