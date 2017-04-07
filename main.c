@@ -176,8 +176,8 @@ void slowBreak() {
 
 	for (int i = speed; i > 0; i--) {
 		motor[MOTOR_L] = ((motor[MOTOR_L] > 0) ? motor[MOTOR_L] - 1 : 0);
-		motor[MOTOR_R] = ((motor[MOTOR_L] > 0) ? motor[MOTOR_L] - 1 : 0);
-		wait1Msec(10);
+		motor[MOTOR_R] = ((motor[MOTOR_R] > 0) ? motor[MOTOR_R] - 1 : 0);
+		wait1Msec(20);
 	}
 
 	motor[MOTOR_L]  = 0;
