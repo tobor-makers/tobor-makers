@@ -91,7 +91,7 @@ void checkBluetoothMessage(string &command) {
 	if (nSizeOfMessage > MAX_SIZE_OF_MESSAGE)
 		nSizeOfMessage = MAX_SIZE_OF_MESSAGE;
 
-	if (nSizeOfMessage > 0){
+	if (nSizeOfMessage > 0) {
 		nBTCmdRdErrorStatus = cCmdMessageRead(nRcvBuffer, nSizeOfMessage, INBOX);
 		nRcvBuffer[nSizeOfMessage] = '\0';
 		stringFromChars(command, (char *)nRcvBuffer);
@@ -103,78 +103,7 @@ void checkBluetoothMessage(string &command) {
 * @return If Robot is on crossroad
 */
 bool checkCrossroad() {
-	return (SensorValue[SENSOR_L] < THRESHOLD_L || SensorValue[SENSOR_L] < THRESHOLD_R);
-}
-
-/**
-* @brief Crossroad state, Waits at crossroad until command is given
-* Crossroad does the following:
-* 	- Uses checkBluetoothMessage function to get command
-*		- Sets robot
-*/
-void crossroadState() {
-	string command = "";
-	checkBluetoothMessage(command);
-
-	// TODO: Remove.
-	if (command == "A") {
-		State = MOVING;
-		return;
-	}
-
-	// If commanded left and there is a left.
-	if (command == "LEFT") {
-		turnLeft();
-		State = MOVING;
-		displayBigTextLine(4, "LEFT");
-	// If commanded right and there is a right.
-	} else if (command == "RIGHT") {
-		turnRight();
-		State = MOVING;
-		displayBigTextLine(4, "LEFT");
-	} else if (command == "FIRE") {
-		// Choose a direction.
-		turnRight();
-		displayBigTextLine(4, "LEFT OF RIGHT");
-	}
-
-	// Stop motors if not stopped already.
-	if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
-		slowBreak();
-	}
-}
-
-void initState() {
-	// tp (target power) is the power level of the motors.
-	const int tp = 10;
-
-	motor[MOTOR_L] = tp;
-	motor[MOTOR_R] = -tp;
-
-	while (SensorValue[SENSOR_R] == 0) {}
-	for (int i=0; i<9000; i++) {
-			if (SensorValue[SENSOR_L] > WhiteL) {
-				WhiteL = SensorValue[SENSOR_L];
-			} else if (SensorValue[SENSOR_L] <= BlackL) {
-				BlackL = SensorValue[SENSOR_L];
-			}
-
-			if (SensorValue[SENSOR_R] > BlackR) {
-				WhiteR = SensorValue[SENSOR_R];
-			} else if (SensorValue[SENSOR_R] <= BlackR) {
-				BlackR = SensorValue[SENSOR_R];
-			}
-
-		  wait1Msec(1);
-	}
-
-	motor[MOTOR_L] = 0;
-	motor[MOTOR_R] = 0;
-
-	OffsetL = (BlackL+WhiteL)/2;
-	OffsetR = (BlackR+WhiteR)/2;
-
-	State = STOPPED;
+	return (SensorValue[SENSOR_L] < THRESHOLD_L || SensorValue[SENSOR_R] < THRESHOLD_R);
 }
 
 /**
@@ -248,12 +177,106 @@ void slowBreak() {
 	for (int i = speed; i > 0; i--) {
 		motor[MOTOR_L] = ((motor[MOTOR_L] > 0) ? motor[MOTOR_L] - 1 : 0);
 		motor[MOTOR_R] = ((motor[MOTOR_L] > 0) ? motor[MOTOR_L] - 1 : 0);
-
 		wait1Msec(10);
 	}
 
 	motor[MOTOR_L]  = 0;
 	motor[MOTOR_R] = 0;
+}
+
+void turnLeft () {
+	motor[MOTOR_L] = -15;
+	motor[MOTOR_R] = 15;
+	while (SensorValue[SENSOR_R] >= THRESHOLD_R) {
+		wait1Msec(1);
+	}
+	motor[MOTOR_L] = 0;
+	motor[MOTOR_R] = 0;
+
+	wait1Msec(50);
+}
+
+void turnRight() {
+	motor[MOTOR_L] = 15;
+	motor[MOTOR_R] = -15;
+	while (SensorValue[SENSOR_L] >= THRESHOLD_L) {
+		wait1Msec(1);
+	}
+	motor[MOTOR_L] = 0;
+	motor[MOTOR_R] = 0;
+
+	wait1Msec(50);
+}
+
+/**
+* @brief Crossroad state, Waits at crossroad until command is given
+* Crossroad does the following:
+* 	- Uses checkBluetoothMessage function to get command
+*		- Sets robot
+*/
+void crossroadState() {
+	string command = "";
+	checkBluetoothMessage(command);
+
+	// TODO: Remove.
+	if (command == "A") {
+		State = MOVING;
+		return;
+	}
+
+	if (command == "LEFT") {
+		// If commanded left and there is a left turn.
+		turnLeft();
+		State = MOVING;
+		displayBigTextLine(4, "LEFT");
+	} else if (command == "RIGHT") {
+		// If commanded right and there is a right turn.
+		turnRight();
+		State = MOVING;
+		displayBigTextLine(4, "LEFT");
+	} else if (command == "FIRE") {
+		// Choose a direction.
+		turnRight();
+		displayBigTextLine(4, "LEFT OF RIGHT");
+	}
+
+	// Stop motors if not stopped already.
+	if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
+		slowBreak();
+	}
+}
+
+void initState() {
+	// tp (target power) is the power level of the motors.
+	const int tp = 10;
+
+	motor[MOTOR_L] = tp;
+	motor[MOTOR_R] = -tp;
+
+	while (SensorValue[SENSOR_R] == 0) {}
+	for (int i=0; i<7500; i++) {
+			if (SensorValue[SENSOR_L] > WhiteL) {
+				WhiteL = SensorValue[SENSOR_L];
+			} else if (SensorValue[SENSOR_L] <= BlackL) {
+				BlackL = SensorValue[SENSOR_L];
+			}
+
+			if (SensorValue[SENSOR_R] > BlackR) {
+				WhiteR = SensorValue[SENSOR_R];
+			} else if (SensorValue[SENSOR_R] <= BlackR) {
+				BlackR = SensorValue[SENSOR_R];
+			}
+
+		  wait1Msec(1);
+	}
+
+	motor[MOTOR_L] = 0;
+	motor[MOTOR_R] = 0;
+
+	OffsetL = (BlackL+WhiteL)/2;
+	OffsetR = (BlackR+WhiteR)/2;
+
+	State = STOPPED;
 }
 
 /**
@@ -278,30 +301,6 @@ void stopState() {
 	if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
 		slowBreak();
 	}
-}
-
-void turnLeft () {
-	motor[MOTOR_L] = -15;
-	motor[MOTOR_R] = 15;
-	while (SensorValue[SENSOR_R] >= THRESHOLD_R) {
-		wait1Msec(1);
-	}
-	motor[MOTOR_L] = 0;
-	motor[MOTOR_R] = 0;
-
-	wait1Msec(50);
-}
-
-void turnRight() {
-	motor[MOTOR_L] = 15;
-	motor[MOTOR_R] = -15;
-	while (SensorValue[SESNOR_L] >= THRESHOLD_L) {
-		wait1Msec(1);
-	}
-	motor[MOTOR_L] = 0;
-	motor[MOTOR_R] = 0;
-
-	wait1Msec(50);
 }
 
 
