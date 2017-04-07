@@ -23,6 +23,7 @@ typedef enum {
 * Globals.
 */
 
+// This is is minimum distance an object needs to be in order to be detected.
 const int VIEW_DIST = 25;
 const int THRESHOLD_L = 40; // 50
 const int THRESHOLD_R = 20; // 30
@@ -37,14 +38,14 @@ const int INBOX = 5;
 // See https://punpun.xyz/f747.pdf for more information about PID.
 
 // black* and white* are the blackest and whitest values the sensors can see.
-// Do not edit these, these values will be used (and set by) initState().
+// Do not edit these, these values will be used (and set) by initState().
 int BlackL = 100;
 int BlackR = 100;
 int WhiteL = 0;
 int WhiteR = 0;
 
 // offset is the avarage of the light-sensor measurements of "total white" and "total black".
-// Do not edit these, these values will be used (and set by) initState().
+// Do not edit these, these values will be used (and set) by initState().
 int OffsetL = 0;
 int OffsetR = 0;
 
@@ -60,15 +61,15 @@ const int KD = 15;
 const int TP = 35;
 
 // integral is the running sum of the error.
-// Do not edit this, this value is being used (and set) by moveState().
+// Do not edit this, this value will be used (and set) by moveState().
 int Integral = 0;
 
 // derivative is the current error minus the previous error.
-// Do not edit this, this value is being used (and set) by moveState().
+// Do not edit this, this value will be used (and set) by moveState().
 int Derivative = 0;
 
 // These two should be fairly self-explanatory.
-// Again, do not edit these, these values are being used (and set) by moveState().
+// Again, do not edit these, these values will bw used (and set) by moveState().
 int LastError = 0;
 int Turn = 0;
 
