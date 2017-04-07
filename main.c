@@ -36,6 +36,12 @@ const int INBOX = 5;
 * PID GLOBALS
 * See https://punpun.xyz/f747.pdf for more information about PID.
 */
+
+int blackL = 100;
+int blackR = 100;
+int whiteL = 0;
+int whiteR = 0;
+
 // offset is the avarage of the light-sensor measurements of "total white" and "total black".
 int offsetL = 0;
 int offsetR = 0;
@@ -65,11 +71,6 @@ int turn = 0;
 void initState() {
 	// tp (target power) is the power level of the motors.
 	const int tp = 10;
-
-	int blackL = 100;
-	int blackR = 100;
-	int whiteL = 0;
-	int whiteR = 0;
 
 	motor[motorL] = tp;
 	motor[motorR] = -tp;
