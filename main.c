@@ -1,8 +1,8 @@
-#pragma config(Sensor, S1,     SENSOR_L,     sensorLightActive)
+#pragma config(Sensor, S1,     SENSOR_L, sensorLightActive)
 #pragma config(Sensor, S2,     SENSOR_S, sensorSONAR)
-#pragma config(Sensor, S3,     SENSOR_R,     sensorColorNxtRED)
-#pragma config(Motor,  motorB, MOTOR_R,      tmotorNXT, PIDControl, driveRight, encoder)
-#pragma config(Motor,  motorC, MOTOR_L,      tmotorNXT, PIDControl, driveLeft,  encoder)
+#pragma config(Sensor, S3,     SENSOR_R, sensorColorNxtRED)
+#pragma config(Motor,  motorB, MOTOR_R,  tmotorNXT, PIDControl, driveRight, encoder)
+#pragma config(Motor,  motorC, MOTOR_L,  tmotorNXT, PIDControl, driveLeft,  encoder)
 #pragma platform(NXT)
 
 
@@ -16,7 +16,7 @@ typedef enum {
 	MOVING = 2,
 	RIP = 3,
 	STOPPED = 4
-} State;
+} StateEnum;
 
 
 /*
@@ -24,9 +24,9 @@ typedef enum {
 */
 
 const int VIEW_DIST = 25;
-const int TRESHHOLD_L = 40; // 50
-const int TRESHHOLD_R = 20; // 30
-State STATE = INIT;
+const int THRESHOLD_L = 40; // 50
+const int THRESHOLD_R = 20; // 30
+StateEnum State = INIT;
 
 // Bluetooth gobals.
 const int MAX_SIZE_OF_MESSAGE = 30;
@@ -37,16 +37,16 @@ const int INBOX = 5;
 // See https://punpun.xyz/f747.pdf for more information about PID.
 
 // black* and white* are the blackest and whitest values the sensors can see.
-// Do not edit these, these values will be editied (and are used by) initState.
-int BLACK_L = 100;
-int BLACK_R = 100;
-int WHITE_L = 0;
-int WHITE_R = 0;
+// Do not edit these, these values will be used (and set by) initState().
+int BlackL = 100;
+int BlackR = 100;
+int WhiteL = 0;
+int WhiteR = 0;
 
 // offset is the avarage of the light-sensor measurements of "total white" and "total black".
-// Do not edit these, these values will be editied (and are used by) initState.
-int OFFSET_L = 0;
-int OFFSET_R = 0;
+// Do not edit these, these values will be used (and set by) initState().
+int OffsetL = 0;
+int OffsetR = 0;
 
 // kp (the konstant for the proportional controller) is calculated using `0.60*kc`,
 // kc (critical gain) being a value where the robot follows the line and gives noticeable
@@ -60,15 +60,17 @@ const int KD = 15;
 const int TP = 35;
 
 // integral is the running sum of the error.
-int INTEGRAL = 0;
+// Do not edit this, this value is being used (and set) by moveState().
+int Integral = 0;
 
 // derivative is the current error minus the previous error.
-int DERIVATIVE = 0;
+// Do not edit this, this value is being used (and set) by moveState().
+int Derivative = 0;
 
 // These two should be fairly self-explanatory.
-// Again
-int LAST_ERROR = 0;
-int TURN = 0;
+// Again, do not edit these, these values are being used (and set) by moveState().
+int LastError = 0;
+int Turn = 0;
 
 
 /*
@@ -100,7 +102,7 @@ void checkBluetoothMessage(string &command) {
 * @return If Robot is on crossroad
 */
 bool checkCrossroad() {
-	return (SensorValue[SENSOR_L] < TRESHHOLD_L || SensorValue[SENSOR_L] < TRESHHOLD_R);
+	return (SensorValue[SENSOR_L] < THRESHOLD_L || SensorValue[SENSOR_L] < THRESHOLD_R);
 }
 
 /**
@@ -115,27 +117,27 @@ void crossroadState() {
 
 	// TODO: Remove.
 	if (command == "A") {
-		STATE = MOVING;
+		State = MOVING;
 		return;
 	}
 
-	// if commanded left and there is a left
+	// If commanded left and there is a left.
 	if (command == "LEFT") {
 		turnLeft();
-		STATE = MOVING;
+		State = MOVING;
 		displayBigTextLine(4, "LEFT");
-	// If commanded right and there is a right
+	// If commanded right and there is a right.
 	} else if (command == "RIGHT") {
 		turnRight();
-		STATE = MOVING;
+		State = MOVING;
 		displayBigTextLine(4, "LEFT");
 	} else if (command == "FIRE") {
-		// MAKE ROBOT CHOOSE
+		// Choose a direction.
 		turnRight();
 		displayBigTextLine(4, "LEFT OF RIGHT");
 	}
 
-	// Stop motors if not stopped already
+	// Stop motors if not stopped already.
 	if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
 		slowBreak();
 	}
@@ -150,16 +152,16 @@ void initState() {
 
 	while (SensorValue[SENSOR_R] == 0) {}
 	for (int i=0; i<9000; i++) {
-			if (SensorValue[SENSOR_L] > WHITE_L) {
-				WHITE_L = SensorValue[SENSOR_L];
-			} else if (SensorValue[SENSOR_L] <= BLACK_L) {
-				BLACK_L = SensorValue[SENSOR_L];
+			if (SensorValue[SENSOR_L] > WhiteL) {
+				WhiteL = SensorValue[SENSOR_L];
+			} else if (SensorValue[SENSOR_L] <= BlackL) {
+				BlackL = SensorValue[SENSOR_L];
 			}
 
-			if (SensorValue[SENSOR_R] > BLACK_R) {
-				WHITE_R = SensorValue[SENSOR_R];
-			} else if (SensorValue[SENSOR_R] <= BLACK_R) {
-				BLACK_R = SensorValue[SENSOR_R];
+			if (SensorValue[SENSOR_R] > BlackR) {
+				WhiteR = SensorValue[SENSOR_R];
+			} else if (SensorValue[SENSOR_R] <= BlackR) {
+				BlackR = SensorValue[SENSOR_R];
 			}
 
 		  wait1Msec(1);
@@ -168,15 +170,17 @@ void initState() {
 	motor[MOTOR_L] = 0;
 	motor[MOTOR_R] = 0;
 
-	OFFSET_L = (BLACK_L+WHITE_L)/2;
-	OFFSET_R = (BLACK_R+WHITE_R)/2;
+	OffsetL = (BlackL+WhiteL)/2;
+	OffsetR = (BlackR+WhiteR)/2;
+
+	State = STOPPED;
 }
 
 /**
 * @brief Plays sound
 */
 void makeSound(){
-	// TODO: enabble
+	// TODO: Enable.
 	// playSound(soundUpwardTones);
 }
 
@@ -190,7 +194,7 @@ void makeSound(){
 *		- Sets motor speed to MAX_SPEED
 */
 // TODO: Remove counter and replace with time.
-int COUNTER = 0;
+int Counter = 0;
 void moveState() {
 	// Get command from app.
 	string command = "";
@@ -198,40 +202,40 @@ void moveState() {
 
 	// Startup bot when the fire button is pressed on the Android app.
 	if (command == "FIRE") {
-		STATE = STOPPED;
+		State = STOPPED;
 		return;
 	}
 
 	// If we see a object.
 	if (SensorValue[SENSOR_S] < VIEW_DIST) {
-		STATE = STOPPED;
+		State = STOPPED;
 		return;
 	}
 
 	if (checkCrossroad()) {
-		STATE = CROSSROAD;
+		State = CROSSROAD;
 		return;
 	}
 
 	// Play sound.
-	COUNTER++;
-	if (COUNTER > 75) {
+	Counter++;
+	if (Counter > 75) {
 		makeSound();
-		COUNTER = 0;
+		Counter = 0;
 	}
 
 	// Line follow using PID.
-	int error = (SensorValue[SENSOR_L]-OFFSET_L) - (SensorValue[SENSOR_R]-OFFSET_R);
-	INTEGRAL += error;
-	DERIVATIVE = error - LAST_ERROR;
+	int error = (SensorValue[SENSOR_L]-OffsetL) - (SensorValue[SENSOR_R]-OffsetR);
+	Integral += error;
+	Derivative = error - LastError;
 
-	TURN = (KP*error) + (KI*INTEGRAL) + (KD*DERIVATIVE);
+	Turn = (KP*error) + (KI*Integral) + (KD*Derivative);
 
-	LAST_ERROR = error;
+	LastError = error;
 
 	// Actually alter motor speed.
-	motor[MOTOR_L] = TP - TURN;
-	motor[MOTOR_R] = TP + TURN;
+	motor[MOTOR_L] = TP - Turn;
+	motor[MOTOR_R] = TP + Turn;
 }
 
 /**
@@ -265,7 +269,7 @@ void stopState() {
 
 	// Startup bot when fire button is pressed on the app
 	if (command == "FIRE") {
-		STATE = MOVING;
+		State = MOVING;
 		return;
 	}
 
@@ -278,7 +282,7 @@ void stopState() {
 void turnLeft () {
 	motor[MOTOR_L] = -15;
 	motor[MOTOR_R] = 15;
-	while (SensorValue[SENSOR_R] >= TRESHHOLD_R) {
+	while (SensorValue[SENSOR_R] >= THRESHOLD_R) {
 		wait1Msec(1);
 	}
 	motor[MOTOR_L] = 0;
@@ -290,7 +294,7 @@ void turnLeft () {
 void turnRight() {
 	motor[MOTOR_L] = 15;
 	motor[MOTOR_R] = -15;
-	while (SensorValue[SESNOR_L] >= TRESHHOLD_L) {
+	while (SensorValue[SESNOR_L] >= THRESHOLD_L) {
 		wait1Msec(1);
 	}
 	motor[MOTOR_L] = 0;
@@ -311,14 +315,14 @@ task main() {
 	bool running = true;
 
 	while(running) {
-		switch(STATE) {
+		switch(State) {
 			case CROSSROAD:
 				displayBigTextLine(0, "Crossroad");
 				crossroadState();
 				break;
 			case INIT:
 				initState();
-				STATE = STOPPED;
+				break;
 			case MOVING:
 				displayBigTextLine(0, "Moving");
 				moveState();
