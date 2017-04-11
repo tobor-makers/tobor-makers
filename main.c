@@ -56,16 +56,16 @@ int OffsetR = 0;
 // kc (critical gain) being a value where the robot follows the line and gives noticeable
 // oscillation but not really a wild one.
 //
-//his controls how fast the controller will try to get back to the line edge when it has drifted away from it,
+// his controls how fast the controller will try to get back to the line edge when it has drifted away from it,
 // however a low KP value will increase oscillation.
-const int KP = 100;
+const int KP = 94;
 
 // The konstant integral, is calculated using (2*KP*DT/PC).
 // TODO: Find a nice value for this maybe?
 const int KI = 0;
 
 // The konstant derivative, is calculated using (KP*PC/(8*DT)).
-const int KD = 1500;
+const int KD = 1550;
 
 // tp (target power) is the power level of both motors when the robot is supposed to go
 // straight ahead, which it does when the error has a value of 0.
@@ -171,7 +171,7 @@ void moveState() {
 	Derivative = error - LastError;
 
 	Turn = (KP*error) + (KI*Integral) + (KD*Derivative);
-	Turn = round(Turn/100);
+	Turn = round(Turn / 100);
 
 	LastError = error;
 
@@ -184,14 +184,13 @@ void moveState() {
 * @brief Reduce motor speed of robot slowly
 */
 void slowBreak() {
-	int speed = ((motor[MOTOR_L] > motor[MOTOR_R]) ? motor[MOTOR_L] : motor[MOTOR_R]);
+	int speed = ((motor[MOTOR_L] > motor[MOTOR_R]) ? motor[MOTOR_L] : motor[MOTOR_R]) / 2;
 
 	for (int i = speed; i > 0; i--) {
-		motor[MOTOR_L] = ((motor[MOTOR_L] > 0) ? motor[MOTOR_L] - 1 : 0);
-		motor[MOTOR_R] = ((motor[MOTOR_R] > 0) ? motor[MOTOR_R] - 1 : 0);
+		motor[MOTOR_L] = i;
+		motor[MOTOR_R] = i;
 		wait1Msec(20);
 	}
-
 	motor[MOTOR_L]  = 0;
 	motor[MOTOR_R] = 0;
 }
@@ -291,7 +290,8 @@ void moveAroundObject() {
 void turnLeft () {
 	motor[MOTOR_L] = -15;
 	motor[MOTOR_R] = 15;
-	while (SensorValue[SENSOR_R] >= OffsetR) {
+	displayTextLine(6, "TurnLefto");
+	while (SensorValue[SENSOR_R] >= WhiteR) {
 		wait1Msec(1);
 	}
 	motor[MOTOR_L] = 0;
@@ -303,7 +303,8 @@ void turnLeft () {
 void turnRight() {
 	motor[MOTOR_L] = 15;
 	motor[MOTOR_R] = -15;
-	while (SensorValue[SENSOR_L] >= OffsetL) {
+	displayTextLine(6, "TurnRighto");
+	while (SensorValue[SENSOR_L] >= WhiteL) {
 		wait1Msec(1);
 	}
 	motor[MOTOR_L] = 0;
