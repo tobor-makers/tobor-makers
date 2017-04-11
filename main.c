@@ -55,9 +55,17 @@ int OffsetR = 0;
 // kp (the konstant for the proportional controller) is calculated using `0.60*kc`,
 // kc (critical gain) being a value where the robot follows the line and gives noticeable
 // oscillation but not really a wild one.
-const int KP = 1;
-const int KI = 0.001;
-const int KD = 15;
+//
+//his controls how fast the controller will try to get back to the line edge when it has drifted away from it,
+// however a low KP value will increase oscillation.
+const int KP = 100;
+
+// The konstant integral, is calculated using (2*KP*DT/PC).
+// TODO: Find a nice value for this maybe?
+const int KI = 0;
+
+// The konstant derivative, is calculated using (KP*PC/(8*DT)).
+const int KD = 1500;
 
 // tp (target power) is the power level of both motors when the robot is supposed to go
 // straight ahead, which it does when the error has a value of 0.
@@ -163,6 +171,7 @@ void moveState() {
 	Derivative = error - LastError;
 
 	Turn = (KP*error) + (KI*Integral) + (KD*Derivative);
+	Turn = round(Turn/100);
 
 	LastError = error;
 
@@ -195,9 +204,7 @@ void turnFaceDegrees(int degrees) {
 	nMotorEncoderTarget[MOTOR_EYES] = degrees;
 	motor[MOTOR_EYES] = ((degrees > 0) ? 20 : -20);
 
-	while(nMotorRunState[MOTOR_EYES] != runStateIdle) {
-	  // Do not continue.
-	}
+	while(nMotorRunState[MOTOR_EYES] != runStateIdle) {}
 	motor[MOTOR_EYES] = 0;
 }
 
@@ -256,34 +263,28 @@ void moveAroundObject() {
 		nMotorEncoderTarget[MOTOR_L] = robotLength;
 		motor[MOTOR_L] = 20;
 		motor[MOTOR_R] = 20;
-		while(nMotorRunState[MOTOR_L] != runStateIdle) {
-		  // Do nothing
-		}
+		while(nMotorRunState[MOTOR_L] != runStateIdle) {}
 		slowBreak();
-		// Turn -90 degrees
+		// Turn -90 degrees.
 		turnRobotDegrees(-90);
 
 		if (i != num - 1) {
-			// Move full robot to object
+			// Move full robot to object.
 			nMotorEncoder[MOTOR_L] = 0;
 			nMotorEncoderTarget[MOTOR_L] = robotLength;
 			motor[MOTOR_L] = 20;
 			motor[MOTOR_R] = 20;
-			while(nMotorRunState[MOTOR_L] != runStateIdle) {
-			  // Do nothing
-			}
+			while(nMotorRunState[MOTOR_L] != runStateIdle) {}
 		}
 	}
 	slowBreak();
-	// Move Eyes back
-	turnFaceDegrees(90); // Turn face forward again
+	// Move Eyes back.
+	turnFaceDegrees(90); // Turn face forward again.
 
-	// Go back to line
+	// Go back to line.
 	motor[MOTOR_L] = 20;
 	motor[MOTOR_R] = 20;
-	while (SensorValue[SENSOR_L] > THRESHOLD_L && SensorValue[SENSOR_R] > THRESHOLD_R) {
-		// Do nothing
-	}
+	while (SensorValue[SENSOR_L] > THRESHOLD_L && SensorValue[SENSOR_R] > THRESHOLD_R) {}
 	slowBreak();
 }
 
