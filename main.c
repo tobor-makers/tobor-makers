@@ -27,7 +27,7 @@ typedef enum {
 */
 
 // This is is minimum distance an object needs to be in order to be detected.
-const int VIEW_DIST = 25;
+const int VIEW_DIST = 20;
 const int THRESHOLD_L = 50; // 50
 const int THRESHOLD_R = 30; // 30
 StateEnum State = INIT;
