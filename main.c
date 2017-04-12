@@ -161,7 +161,13 @@ void moveState() {
     string command = "";
     checkBluetoothMessage(command);
 
+    // Mute robot
     if (command == "B") Muted = !Muted;
+
+    // Kill robot
+    if (command == "C") {
+    	State = RIP
+    }
 
     // Startup bot when the fire button is pressed on the Android app.
     if (command == "FIRE") {
