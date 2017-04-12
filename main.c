@@ -370,16 +370,35 @@ void crossroadState() {
     }
 
     if (command == "LEFT") {
-        // If commanded left and there is a left turn.
         turnLeft();
         State = MOVING;
+        return;
     } else if (command == "RIGHT") {
-        // If commanded right and there is a right turn.
         turnRight();
         State = MOVING;
-    } else if (command == "FIRE") {
-        // Choose a direction.
-        turnRight();
+        return;
+    } else if (command == "UP") {
+   	    // Drive a litle bit forward
+        nMotorEncoder[MOTOR_L] = 0;
+        nMotorEncoderTarget[MOTOR_L] = 50;
+        motor[MOTOR_L] = 20;
+        motor[MOTOR_R] = 20;
+        while(nMotorRunState[MOTOR_L] != runStateIdle) {} // drive until 50 degree
+        motor[MOTOR_L] = 0;
+        motor[MOTOR_R] = 0;
+
+        State = MOVING;
+        return;
+  	} else if (command == "FIRE") {
+        // Choose a random direction.
+        int ran = random(2);
+        if (ran == 0)
+        	turnRight();
+        else
+        	turnLeft();
+
+        State = MOVING;
+        return;
     }
 
     // Stop motors if not stopped already.
