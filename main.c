@@ -311,8 +311,8 @@ void moveAroundObject() {
     turnFaceDegrees(90); // Turn face forward again.
 
     // Go back to line.
-    motor[MOTOR_L] = 20;
-    motor[MOTOR_R] = 20;
+    motor[MOTOR_L] = TP;
+    motor[MOTOR_R] = TP;
     while (SensorValue[SENSOR_L] > THRESHOLD_L && SensorValue[SENSOR_R] > THRESHOLD_R) {}
     slowBreak();
 }
@@ -470,6 +470,7 @@ void stopState() {
         return;
     } else if (command == "A") {
         moveAroundObject();
+        turnRight();
         State = MOVING;
         return;
     }
