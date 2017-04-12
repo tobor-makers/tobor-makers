@@ -42,11 +42,9 @@ const int VIEW_DIST = 20;
 const int THRESHOLD_L = 50; // 50
 const int THRESHOLD_R = 30; // 30
 // STARTING STATE of the robot
-StateEnum State = INIT;
-
-// TODO: Remove counter and replace with time.
-// Used for sound
-int Counter = 0;
+StateEnum State = MOVING;
+// Mutes annoying sound
+bool Muted = true;
 
 // Bluetooth gobals.
 const int MAX_SIZE_OF_MESSAGE = 30;
@@ -140,8 +138,10 @@ bool checkCrossroad() {
 * @authors Wouter Dijkstra, Noortje Metsemakers
 */
 void makeSound(){
-    // TODO: Enable.
-    // playSound(soundUpwardTones);
+    if (!Muted && !bSoundActive)
+        playSound(soundUpwardTones);
+    else if (Muted && bSoundActive)
+    	ClearSounds();
 }
 
 /**
@@ -161,6 +161,8 @@ void moveState() {
     string command = "";
     checkBluetoothMessage(command);
 
+    if (command == "B") Muted = !Muted;
+
     // Startup bot when the fire button is pressed on the Android app.
     if (command == "FIRE") {
         State = STOPPED;
@@ -179,11 +181,7 @@ void moveState() {
         return;
     }
     // Play sound.
-    Counter++;
-    if (Counter > 75) {
-        makeSound();
-        Counter = 0;
-    }
+    makeSound();
 
     // Line follow using PID.
     int error = (SensorValue[SENSOR_L]-OffsetL) - (SensorValue[SENSOR_R]-OffsetR);
