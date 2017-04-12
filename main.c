@@ -9,6 +9,17 @@
 #pragma platform(NXT)
 
 
+/**
+ * @file
+ * @mainpage Author Information
+ *  Tobor Makers (<a href="https://github.com/tobor-makers/tobor-makers">Tobor Maker</a>) \n
+ *  12/04/2017 \n
+ *  Hogeschool Utrecht - Jaar 1 - Blok 3 - RobotC
+ * @section program_name Program name
+ *  Tobor the robot
+*/
+
+
 /*
 * Enums.
 */
@@ -30,7 +41,12 @@ typedef enum {
 const int VIEW_DIST = 20;
 const int THRESHOLD_L = 50; // 50
 const int THRESHOLD_R = 30; // 30
+// STARTING STATE of the robot
 StateEnum State = INIT;
+
+// TODO: Remove counter and replace with time.
+// Used for sound
+int Counter = 0;
 
 // Bluetooth gobals.
 const int MAX_SIZE_OF_MESSAGE = 30;
@@ -92,6 +108,7 @@ int Turn = 0;
 /**
 * @brief Checks for bluetooth messages and sets command string
 * @param command String to hold the bluetooth message
+* @authors Nick Bout, Wouter Dijkstra
 */
 void checkBluetoothMessage(string &command) {
 	int nSizeOfMessage;
@@ -112,6 +129,7 @@ void checkBluetoothMessage(string &command) {
 /**
 * @brief Checks for crossroads
 * @return If Robot is on crossroad
+* @authors Eelke Feitz
 */
 bool checkCrossroad() {
 	return (SensorValue[SENSOR_L] < THRESHOLD_L && SensorValue[SENSOR_R] < THRESHOLD_R);
@@ -119,6 +137,7 @@ bool checkCrossroad() {
 
 /**
 * @brief Plays sound
+* @authors Wouter Dijkstra, Noortje Metsemakers
 */
 void makeSound(){
 	// TODO: Enable.
@@ -127,15 +146,16 @@ void makeSound(){
 
 /**
 * @brief Move state, moves robot etc
+*
 * Move state does the following:
 * 	- Uses checkBluetoothMessage function to get command
 *   - Sets robot state to STOPPED when "FIRE" command is given
-*		- Sets robot state to STOPPED when there is a objec
+*		- Sets robot state to STOPPED when there is a object
 *		- Plays sound with the makeSound function
 *		- Sets motor speed to MAX_SPEED
+*
+* @authors Nick Bout, Wouter Dijkstra, Eelke Feitz, Noortje Metsemakers, Camille Scholtz
 */
-// TODO: Remove counter and replace with time.
-int Counter = 0;
 void moveState() {
 	// Get command from app.
 	string command = "";
@@ -182,6 +202,7 @@ void moveState() {
 
 /**
 * @brief Reduce motor speed of robot slowly
+* @authors Nick Bout
 */
 void slowBreak() {
 	int speed = ((motor[MOTOR_L] > motor[MOTOR_R]) ? motor[MOTOR_L] : motor[MOTOR_R]) / 2;
@@ -197,6 +218,8 @@ void slowBreak() {
 
 /**
 *	@brief Turn face in degrees
+* @param degrees The amount of degrees the face needs to turn.
+* @authors Nick Bout
 */
 void turnFaceDegrees(int degrees) {
 	nMotorEncoder[MOTOR_EYES] = 0;
@@ -209,6 +232,8 @@ void turnFaceDegrees(int degrees) {
 
 /**
 * @brief Turn robot in degrees
+* @param degrees The amount of degrees the robot needs to turn.
+* @authors Nick Bout
 */
 void turnRobotDegrees(int degrees) {
 	degrees *= 2;
@@ -226,7 +251,9 @@ void turnRobotDegrees(int degrees) {
 }
 
 /**
-*	@brief Move around object, then drive back to lane
+*	@brief Move around object, then drive back to line
+*
+* @authors Nick Bout
 */
 void moveAroundObject() {
 	displayBigTextLine(0, "Test");
@@ -287,6 +314,11 @@ void moveAroundObject() {
 	slowBreak();
 }
 
+/**
+* @brief Turn robot left till line is found
+*
+* @authors Wouter Dijkstra
+*/
 void turnLeft () {
 	motor[MOTOR_L] = -15;
 	motor[MOTOR_R] = 15;
@@ -300,6 +332,10 @@ void turnLeft () {
 	wait1Msec(50);
 }
 
+/**
+* @brief Turn robot right till line is found
+* @authors Wouter Dijkstra
+*/
 void turnRight() {
 	motor[MOTOR_L] = 15;
 	motor[MOTOR_R] = -15;
@@ -315,15 +351,18 @@ void turnRight() {
 
 /**
 * @brief Crossroad state, Waits at crossroad until command is given
+*
 * Crossroad does the following:
 * 	- Uses checkBluetoothMessage function to get command
-*		- Sets robot
+*		- Goes in direction command tells it to go
+* 	- Sets state to MOVING when line is found
+*
+* @authors Nick Bout, Wouter Dijkstra
 */
 void crossroadState() {
 	string command = "";
 	checkBluetoothMessage(command);
 
-	// TODO: Remove.
 	if (command == "A") {
 		State = MOVING;
 		return;
@@ -351,6 +390,15 @@ void crossroadState() {
 	}
 }
 
+/**
+* @brief Initialises robot
+*
+* initState does the following:
+* 	- Calibrates L and R offset for PID line follow
+* 	- Sets robot in STOPPED state
+*
+* @authors Noortje Metsemakers, Camille Scholtz
+*/
 void initState() {
 	// tp (target power) is the power level of the motors.
 	const int tp = 10;
@@ -386,10 +434,13 @@ void initState() {
 
 /**
 * @brief Stop state, stops the robot etc
+*
 * Move state does the following:
 * 	- Uses checkBluetoothMessage function to get command
-*   - Sets robot state to MOVING when "FIRE" command is given
+* 	- Sets robot state to MOVING when "FIRE" command is given
 *		- uses slowBreak function when motor speed > 0
+*
+* @authors Nick Bout
 */
 void stopState() {
 	// Get command from app
@@ -419,6 +470,7 @@ void stopState() {
 
 /**
 * @brief Main, Starts main loop and calls functions based on STATE
+* @authors Nick Bout
 */
 task main() {
 	bool running = true;
