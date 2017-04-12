@@ -25,11 +25,11 @@
 */
 
 typedef enum {
-	CROSSROAD = 0,
-	INIT = 1,
-	MOVING = 2,
-	RIP = 3,
-	STOPPED = 4
+    CROSSROAD = 0,
+    INIT = 1,
+    MOVING = 2,
+    RIP = 3,
+    STOPPED = 4
 } StateEnum;
 
 
@@ -111,19 +111,19 @@ int Turn = 0;
 * @authors Nick Bout, Wouter Dijkstra
 */
 void checkBluetoothMessage(string &command) {
-	int nSizeOfMessage;
-	TFileIOResult nBTCmdRdErrorStatus;
-	ubyte nRcvBuffer[MAX_SIZE_OF_MESSAGE];
-	nSizeOfMessage = cCmdMessageGetSize(INBOX);
+    int nSizeOfMessage;
+    TFileIOResult nBTCmdRdErrorStatus;
+    ubyte nRcvBuffer[MAX_SIZE_OF_MESSAGE];
+    nSizeOfMessage = cCmdMessageGetSize(INBOX);
 
-	if (nSizeOfMessage > MAX_SIZE_OF_MESSAGE)
-		nSizeOfMessage = MAX_SIZE_OF_MESSAGE;
+    if (nSizeOfMessage > MAX_SIZE_OF_MESSAGE)
+        nSizeOfMessage = MAX_SIZE_OF_MESSAGE;
 
-	if (nSizeOfMessage > 0) {
-		nBTCmdRdErrorStatus = cCmdMessageRead(nRcvBuffer, nSizeOfMessage, INBOX);
-		nRcvBuffer[nSizeOfMessage] = '\0';
-		stringFromChars(command, (char *)nRcvBuffer);
-	}
+    if (nSizeOfMessage > 0) {
+        nBTCmdRdErrorStatus = cCmdMessageRead(nRcvBuffer, nSizeOfMessage, INBOX);
+        nRcvBuffer[nSizeOfMessage] = '\0';
+        stringFromChars(command, (char *)nRcvBuffer);
+    }
 }
 
 /**
@@ -132,7 +132,7 @@ void checkBluetoothMessage(string &command) {
 * @authors Eelke Feitz
 */
 bool checkCrossroad() {
-	return (SensorValue[SENSOR_L] < THRESHOLD_L && SensorValue[SENSOR_R] < THRESHOLD_R);
+    return (SensorValue[SENSOR_L] < THRESHOLD_L && SensorValue[SENSOR_R] < THRESHOLD_R);
 }
 
 /**
@@ -140,8 +140,8 @@ bool checkCrossroad() {
 * @authors Wouter Dijkstra, Noortje Metsemakers
 */
 void makeSound(){
-	// TODO: Enable.
-	// playSound(soundUpwardTones);
+    // TODO: Enable.
+    // playSound(soundUpwardTones);
 }
 
 /**
@@ -157,47 +157,47 @@ void makeSound(){
 * @authors Nick Bout, Wouter Dijkstra, Eelke Feitz, Noortje Metsemakers, Camille Scholtz
 */
 void moveState() {
-	// Get command from app.
-	string command = "";
-	checkBluetoothMessage(command);
+    // Get command from app.
+    string command = "";
+    checkBluetoothMessage(command);
 
-	// Startup bot when the fire button is pressed on the Android app.
-	if (command == "FIRE") {
-		State = STOPPED;
-		return;
-	}
+    // Startup bot when the fire button is pressed on the Android app.
+    if (command == "FIRE") {
+        State = STOPPED;
+        return;
+    }
 
-	// If we see a object.
-	if (SensorValue[SENSOR_S] < VIEW_DIST) {
-		State = STOPPED;
-		return;
-	}
+    // If we see a object.
+    if (SensorValue[SENSOR_S] < VIEW_DIST) {
+        State = STOPPED;
+        return;
+    }
 
-	if (checkCrossroad()) {
-		State = CROSSROAD;
-		displayBigTextLine(6, "COOLIO");
-		return;
-	}
-	// Play sound.
-	Counter++;
-	if (Counter > 75) {
-		makeSound();
-		Counter = 0;
-	}
+    if (checkCrossroad()) {
+        State = CROSSROAD;
+        displayBigTextLine(6, "COOLIO");
+        return;
+    }
+    // Play sound.
+    Counter++;
+    if (Counter > 75) {
+        makeSound();
+        Counter = 0;
+    }
 
-	// Line follow using PID.
-	int error = (SensorValue[SENSOR_L]-OffsetL) - (SensorValue[SENSOR_R]-OffsetR);
-	Integral += error;
-	Derivative = error - LastError;
+    // Line follow using PID.
+    int error = (SensorValue[SENSOR_L]-OffsetL) - (SensorValue[SENSOR_R]-OffsetR);
+    Integral += error;
+    Derivative = error - LastError;
 
-	Turn = (KP*error) + (KI*Integral) + (KD*Derivative);
-	Turn = round(Turn / 100);
+    Turn = (KP*error) + (KI*Integral) + (KD*Derivative);
+    Turn = round(Turn / 100);
 
-	LastError = error;
+    LastError = error;
 
-	// Actually alter motor speed.
-	motor[MOTOR_L] = TP - Turn;
-	motor[MOTOR_R] = TP + Turn;
+    // Actually alter motor speed.
+    motor[MOTOR_L] = TP - Turn;
+    motor[MOTOR_R] = TP + Turn;
 }
 
 /**
@@ -205,15 +205,15 @@ void moveState() {
 * @authors Nick Bout
 */
 void slowBreak() {
-	int speed = ((motor[MOTOR_L] > motor[MOTOR_R]) ? motor[MOTOR_L] : motor[MOTOR_R]) / 2;
+    int speed = ((motor[MOTOR_L] > motor[MOTOR_R]) ? motor[MOTOR_L] : motor[MOTOR_R]) / 2;
 
-	for (int i = speed; i > 0; i--) {
-		motor[MOTOR_L] = i;
-		motor[MOTOR_R] = i;
-		wait1Msec(20);
-	}
-	motor[MOTOR_L]  = 0;
-	motor[MOTOR_R] = 0;
+    for (int i = speed; i > 0; i--) {
+        motor[MOTOR_L] = i;
+        motor[MOTOR_R] = i;
+        wait1Msec(20);
+    }
+    motor[MOTOR_L]  = 0;
+    motor[MOTOR_R] = 0;
 }
 
 /**
@@ -222,12 +222,12 @@ void slowBreak() {
 * @authors Nick Bout
 */
 void turnFaceDegrees(int degrees) {
-	nMotorEncoder[MOTOR_EYES] = 0;
-	nMotorEncoderTarget[MOTOR_EYES] = degrees;
-	motor[MOTOR_EYES] = ((degrees > 0) ? 20 : -20);
+    nMotorEncoder[MOTOR_EYES] = 0;
+    nMotorEncoderTarget[MOTOR_EYES] = degrees;
+    motor[MOTOR_EYES] = ((degrees > 0) ? 20 : -20);
 
-	while(nMotorRunState[MOTOR_EYES] != runStateIdle) {}
-	motor[MOTOR_EYES] = 0;
+    while(nMotorRunState[MOTOR_EYES] != runStateIdle) {}
+    motor[MOTOR_EYES] = 0;
 }
 
 /**
@@ -236,18 +236,18 @@ void turnFaceDegrees(int degrees) {
 * @authors Nick Bout
 */
 void turnRobotDegrees(int degrees) {
-	degrees *= 2;
-	nMotorEncoder[MOTOR_L] = 0;
-	nMotorEncoderTarget[MOTOR_L] = degrees;
-	motor[MOTOR_L] = ((degrees > 0) ? 20 : -20);
-	motor[MOTOR_R] = ((degrees > 0) ? -20 : 20);
+    degrees *= 2;
+    nMotorEncoder[MOTOR_L] = 0;
+    nMotorEncoderTarget[MOTOR_L] = degrees;
+    motor[MOTOR_L] = ((degrees > 0) ? 20 : -20);
+    motor[MOTOR_R] = ((degrees > 0) ? -20 : 20);
 
-	while(nMotorRunState[MOTOR_L] != runStateIdle) {
-	  // Do not continue.
-		displayBigTextLine(0, "Lekker draaien");
-	}
-	motor[MOTOR_L] = 0;
-	motor[MOTOR_R] = 0;
+    while(nMotorRunState[MOTOR_L] != runStateIdle) {
+      // Do not continue.
+        displayBigTextLine(0, "Lekker draaien");
+    }
+    motor[MOTOR_L] = 0;
+    motor[MOTOR_R] = 0;
 }
 
 /**
@@ -256,62 +256,62 @@ void turnRobotDegrees(int degrees) {
 * @authors Nick Bout
 */
 void moveAroundObject() {
-	displayBigTextLine(0, "Test");
-	const int robotLength = 540; // Robot length ~
-	// Turn eyes 90 degrees
-	turnFaceDegrees(-90); // Look right
-	// Turn robot 90 degrees
-	turnRobotDegrees(90);
+    displayBigTextLine(0, "Test");
+    const int robotLength = 540; // Robot length ~
+    // Turn eyes 90 degrees
+    turnFaceDegrees(-90); // Look right
+    // Turn robot 90 degrees
+    turnRobotDegrees(90);
 
-	// Do this 2 times to drive around
-	int num = 2;
-	for (int i = 0; i < num; ++i) {
-		// Move until not seeing anyting
-		motor[MOTOR_L] = 20;
-		motor[MOTOR_R] = 20;
-		while (SensorValue[SENSOR_S] < 50) {
-			displayBigTextLine(2, "Hierzo");
-			// Follow object
-			if (SensorValue[SENSOR_S] < 15) {
-				motor[MOTOR_L] = 25;
-				motor[MOTOR_R] = 20;
-			} else if (SensorValue[SENSOR_S] >= 15 && SensorValue[SENSOR_S] <= 20) {
-				motor[MOTOR_L] = 20;
-				motor[MOTOR_R] = 20;
-			} else if (SensorValue[SENSOR_S] > 24) {
-				motor[MOTOR_L] = 20;
-				motor[MOTOR_R] = 25;
-			}
-		}
+    // Do this 2 times to drive around
+    int num = 2;
+    for (int i = 0; i < num; ++i) {
+        // Move until not seeing anyting
+        motor[MOTOR_L] = 20;
+        motor[MOTOR_R] = 20;
+        while (SensorValue[SENSOR_S] < 50) {
+            displayBigTextLine(2, "Hierzo");
+            // Follow object
+            if (SensorValue[SENSOR_S] < 15) {
+                motor[MOTOR_L] = 25;
+                motor[MOTOR_R] = 20;
+            } else if (SensorValue[SENSOR_S] >= 15 && SensorValue[SENSOR_S] <= 20) {
+                motor[MOTOR_L] = 20;
+                motor[MOTOR_R] = 20;
+            } else if (SensorValue[SENSOR_S] > 24) {
+                motor[MOTOR_L] = 20;
+                motor[MOTOR_R] = 25;
+            }
+        }
 
-		// Move full robot past object
-		nMotorEncoder[MOTOR_L] = 0;
-		nMotorEncoderTarget[MOTOR_L] = robotLength;
-		motor[MOTOR_L] = 20;
-		motor[MOTOR_R] = 20;
-		while(nMotorRunState[MOTOR_L] != runStateIdle) {}
-		slowBreak();
-		// Turn -90 degrees.
-		turnRobotDegrees(-90);
+        // Move full robot past object
+        nMotorEncoder[MOTOR_L] = 0;
+        nMotorEncoderTarget[MOTOR_L] = robotLength;
+        motor[MOTOR_L] = 20;
+        motor[MOTOR_R] = 20;
+        while(nMotorRunState[MOTOR_L] != runStateIdle) {}
+        slowBreak();
+        // Turn -90 degrees.
+        turnRobotDegrees(-90);
 
-		if (i != num - 1) {
-			// Move full robot to object.
-			nMotorEncoder[MOTOR_L] = 0;
-			nMotorEncoderTarget[MOTOR_L] = robotLength;
-			motor[MOTOR_L] = 20;
-			motor[MOTOR_R] = 20;
-			while(nMotorRunState[MOTOR_L] != runStateIdle) {}
-		}
-	}
-	slowBreak();
-	// Move Eyes back.
-	turnFaceDegrees(90); // Turn face forward again.
+        if (i != num - 1) {
+            // Move full robot to object.
+            nMotorEncoder[MOTOR_L] = 0;
+            nMotorEncoderTarget[MOTOR_L] = robotLength;
+            motor[MOTOR_L] = 20;
+            motor[MOTOR_R] = 20;
+            while(nMotorRunState[MOTOR_L] != runStateIdle) {}
+        }
+    }
+    slowBreak();
+    // Move Eyes back.
+    turnFaceDegrees(90); // Turn face forward again.
 
-	// Go back to line.
-	motor[MOTOR_L] = 20;
-	motor[MOTOR_R] = 20;
-	while (SensorValue[SENSOR_L] > THRESHOLD_L && SensorValue[SENSOR_R] > THRESHOLD_R) {}
-	slowBreak();
+    // Go back to line.
+    motor[MOTOR_L] = 20;
+    motor[MOTOR_R] = 20;
+    while (SensorValue[SENSOR_L] > THRESHOLD_L && SensorValue[SENSOR_R] > THRESHOLD_R) {}
+    slowBreak();
 }
 
 /**
@@ -320,16 +320,16 @@ void moveAroundObject() {
 * @authors Wouter Dijkstra
 */
 void turnLeft () {
-	motor[MOTOR_L] = -15;
-	motor[MOTOR_R] = 15;
-	displayTextLine(6, "TurnLefto");
-	while (SensorValue[SENSOR_R] >= WhiteR) {
-		wait1Msec(1);
-	}
-	motor[MOTOR_L] = 0;
-	motor[MOTOR_R] = 0;
+    motor[MOTOR_L] = -15;
+    motor[MOTOR_R] = 15;
+    displayTextLine(6, "TurnLefto");
+    while (SensorValue[SENSOR_R] >= WhiteR) {
+        wait1Msec(1);
+    }
+    motor[MOTOR_L] = 0;
+    motor[MOTOR_R] = 0;
 
-	wait1Msec(50);
+    wait1Msec(50);
 }
 
 /**
@@ -337,16 +337,16 @@ void turnLeft () {
 * @authors Wouter Dijkstra
 */
 void turnRight() {
-	motor[MOTOR_L] = 15;
-	motor[MOTOR_R] = -15;
-	displayTextLine(6, "TurnRighto");
-	while (SensorValue[SENSOR_L] >= WhiteL) {
-		wait1Msec(1);
-	}
-	motor[MOTOR_L] = 0;
-	motor[MOTOR_R] = 0;
+    motor[MOTOR_L] = 15;
+    motor[MOTOR_R] = -15;
+    displayTextLine(6, "TurnRighto");
+    while (SensorValue[SENSOR_L] >= WhiteL) {
+        wait1Msec(1);
+    }
+    motor[MOTOR_L] = 0;
+    motor[MOTOR_R] = 0;
 
-	wait1Msec(50);
+    wait1Msec(50);
 }
 
 /**
@@ -360,34 +360,34 @@ void turnRight() {
 * @authors Nick Bout, Wouter Dijkstra
 */
 void crossroadState() {
-	string command = "";
-	checkBluetoothMessage(command);
+    string command = "";
+    checkBluetoothMessage(command);
 
-	if (command == "A") {
-		State = MOVING;
-		return;
-	}
+    if (command == "A") {
+        State = MOVING;
+        return;
+    }
 
-	if (command == "LEFT") {
-		// If commanded left and there is a left turn.
-		turnLeft();
-		State = MOVING;
-		displayBigTextLine(4, "LEFT");
-	} else if (command == "RIGHT") {
-		// If commanded right and there is a right turn.
-		turnRight();
-		State = MOVING;
-		displayBigTextLine(4, "LEFT");
-	} else if (command == "FIRE") {
-		// Choose a direction.
-		turnRight();
-		displayBigTextLine(4, "LEFT OF RIGHT");
-	}
+    if (command == "LEFT") {
+        // If commanded left and there is a left turn.
+        turnLeft();
+        State = MOVING;
+        displayBigTextLine(4, "LEFT");
+    } else if (command == "RIGHT") {
+        // If commanded right and there is a right turn.
+        turnRight();
+        State = MOVING;
+        displayBigTextLine(4, "LEFT");
+    } else if (command == "FIRE") {
+        // Choose a direction.
+        turnRight();
+        displayBigTextLine(4, "LEFT OF RIGHT");
+    }
 
-	// Stop motors if not stopped already.
-	if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
-		slowBreak();
-	}
+    // Stop motors if not stopped already.
+    if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
+        slowBreak();
+    }
 }
 
 /**
@@ -400,36 +400,36 @@ void crossroadState() {
 * @authors Noortje Metsemakers, Camille Scholtz
 */
 void initState() {
-	// tp (target power) is the power level of the motors.
-	const int tp = 10;
+    // tp (target power) is the power level of the motors.
+    const int tp = 10;
 
-	motor[MOTOR_L] = tp;
-	motor[MOTOR_R] = -tp;
+    motor[MOTOR_L] = tp;
+    motor[MOTOR_R] = -tp;
 
-	while (SensorValue[SENSOR_R] == 0) {}
-	for (int i=0; i<7500; i++) {
-			if (SensorValue[SENSOR_L] > WhiteL) {
-				WhiteL = SensorValue[SENSOR_L];
-			} else if (SensorValue[SENSOR_L] <= BlackL) {
-				BlackL = SensorValue[SENSOR_L];
-			}
+    while (SensorValue[SENSOR_R] == 0) {}
+    for (int i=0; i<7500; i++) {
+            if (SensorValue[SENSOR_L] > WhiteL) {
+                WhiteL = SensorValue[SENSOR_L];
+            } else if (SensorValue[SENSOR_L] <= BlackL) {
+                BlackL = SensorValue[SENSOR_L];
+            }
 
-			if (SensorValue[SENSOR_R] > BlackR) {
-				WhiteR = SensorValue[SENSOR_R];
-			} else if (SensorValue[SENSOR_R] <= BlackR) {
-				BlackR = SensorValue[SENSOR_R];
-			}
+            if (SensorValue[SENSOR_R] > BlackR) {
+                WhiteR = SensorValue[SENSOR_R];
+            } else if (SensorValue[SENSOR_R] <= BlackR) {
+                BlackR = SensorValue[SENSOR_R];
+            }
 
-		  wait1Msec(1);
-	}
+          wait1Msec(1);
+    }
 
-	motor[MOTOR_L] = 0;
-	motor[MOTOR_R] = 0;
+    motor[MOTOR_L] = 0;
+    motor[MOTOR_R] = 0;
 
-	OffsetL = (BlackL+WhiteL)/2;
-	OffsetR = (BlackR+WhiteR)/2;
+    OffsetL = (BlackL+WhiteL)/2;
+    OffsetR = (BlackR+WhiteR)/2;
 
-	State = STOPPED;
+    State = STOPPED;
 }
 
 /**
@@ -443,24 +443,24 @@ void initState() {
 * @authors Nick Bout
 */
 void stopState() {
-	// Get command from app
-	string command = "";
-	checkBluetoothMessage(command);
+    // Get command from app
+    string command = "";
+    checkBluetoothMessage(command);
 
-	// Startup bot when fire button is pressed on the app
-	if (command == "FIRE") {
-		State = MOVING;
-		return;
-	} else if (command == "A") {
-		moveAroundObject();
-		State = MOVING;
-		return;
-	}
+    // Startup bot when fire button is pressed on the app
+    if (command == "FIRE") {
+        State = MOVING;
+        return;
+    } else if (command == "A") {
+        moveAroundObject();
+        State = MOVING;
+        return;
+    }
 
-	// Stop motors if not stopped already
-	if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
-		slowBreak();
-	}
+    // Stop motors if not stopped already
+    if (motor[MOTOR_L] > 0 || motor[MOTOR_R] > 0) {
+        slowBreak();
+    }
 }
 
 
@@ -473,35 +473,35 @@ void stopState() {
 * @authors Nick Bout
 */
 task main() {
-	bool running = true;
+    bool running = true;
 
-	while(running) {
-		switch(State) {
-			case CROSSROAD:
-				displayBigTextLine(0, "Crossroad");
-				crossroadState();
-				break;
-			case INIT:
-				initState();
-				break;
-			case MOVING:
-				displayTextLine(0, "Moving");
-				displayTextLine(2, "V L%d, R%d", SensorValue[SENSOR_L], SensorValue[SENSOR_R]);
-				displayTextLine(3, "O L%d, R%d", OffsetL, OffsetR);
-				moveState();
-				break;
-			case RIP:
-				displayBigTextLine(0, "Rip");
-				running = false;
-				break;
-			case STOPPED:
-				displayBigTextLine(0, "Stopped");
-				stopState();
-				break;
-			default:
-				displayBigTextLine(0, "No state");
-		}
+    while(running) {
+        switch(State) {
+            case CROSSROAD:
+                displayBigTextLine(0, "Crossroad");
+                crossroadState();
+                break;
+            case INIT:
+                initState();
+                break;
+            case MOVING:
+                displayTextLine(0, "Moving");
+                displayTextLine(2, "V L%d, R%d", SensorValue[SENSOR_L], SensorValue[SENSOR_R]);
+                displayTextLine(3, "O L%d, R%d", OffsetL, OffsetR);
+                moveState();
+                break;
+            case RIP:
+                displayBigTextLine(0, "Rip");
+                running = false;
+                break;
+            case STOPPED:
+                displayBigTextLine(0, "Stopped");
+                stopState();
+                break;
+            default:
+                displayBigTextLine(0, "No state");
+        }
 
-		wait1Msec(1);
-	}
+        wait1Msec(1);
+    }
 }
