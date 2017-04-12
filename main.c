@@ -72,14 +72,14 @@ int OffsetR = 0;
 //
 // his controls how fast the controller will try to get back to the line edge when it has drifted away from it,
 // however a low KP value will increase oscillation.
-const int KP = 94;
+const int KP = 80;
 
 // The konstant integral, is calculated using (2*KP*DT/PC).
 // TODO: Find a nice value for this maybe?
 const int KI = 0;
 
 // The konstant derivative, is calculated using (KP*PC/(8*DT)).
-const int KD = 1550;
+const int KD = 1500;
 
 // tp (target power) is the power level of both motors when the robot is supposed to go
 // straight ahead, which it does when the error has a value of 0.
@@ -130,7 +130,7 @@ void checkBluetoothMessage(string &command) {
 * @authors Eelke Feitz
 */
 bool checkCrossroad() {
-    return (SensorValue[SENSOR_L] < THRESHOLD_L && SensorValue[SENSOR_R] < THRESHOLD_R);
+    return (SensorValue[SENSOR_L] < (OffsetL + 5) && SensorValue[SENSOR_R] < (OffsetR+ 5));
 }
 
 /**
@@ -192,6 +192,7 @@ void moveState() {
 
     // Line follow using PID.
     int error = (SensorValue[SENSOR_L]-OffsetL) - (SensorValue[SENSOR_R]-OffsetR);
+    //int error = (SensorValue[SENSOR_R]-OffsetR) - (SensorValue[SENSOR_L]-OffsetL);
     Integral += error;
     Derivative = error - LastError;
 
@@ -260,7 +261,7 @@ void turnRobotDegrees(int degrees) {
 * @authors Nick Bout
 */
 void moveAroundObject() {
-    const int robotLength = 540; // Robot length ~
+    const int robotLength = 360; // Robot length ~
     // Turn eyes 90 degrees
     turnFaceDegrees(-90); // Look right
     // Turn robot 90 degrees
@@ -324,7 +325,7 @@ void moveAroundObject() {
 void turnLeft () {
     motor[MOTOR_L] = -15;
     motor[MOTOR_R] = 15;
-    while (SensorValue[SENSOR_R] >= WhiteR) {
+    while (SensorValue[SENSOR_R] >=THRESHOLD_R) {
         wait1Msec(1);
     }
     motor[MOTOR_L] = 0;
@@ -340,7 +341,7 @@ void turnLeft () {
 void turnRight() {
     motor[MOTOR_L] = 15;
     motor[MOTOR_R] = -15;
-    while (SensorValue[SENSOR_L] >= WhiteL) {
+    while (SensorValue[SENSOR_L] >= THRESHOLD_L) {
         wait1Msec(1);
     }
     motor[MOTOR_L] = 0;
