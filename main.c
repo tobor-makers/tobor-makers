@@ -42,7 +42,7 @@ const int VIEW_DIST = 20;
 const int THRESHOLD_L = 50; // 50
 const int THRESHOLD_R = 30; // 30
 // STARTING STATE of the robot
-StateEnum State = MOVING;
+StateEnum State = INIT;
 // Mutes annoying sound
 bool Muted = true;
 
@@ -141,7 +141,7 @@ void makeSound(){
     if (!Muted && !bSoundActive)
         playSound(soundUpwardTones);
     else if (Muted && bSoundActive)
-    	ClearSounds();
+        ClearSounds();
 }
 
 /**
@@ -166,7 +166,8 @@ void moveState() {
 
     // Kill robot
     if (command == "C") {
-    	State = RIP
+        State = RIP;
+        return;
     }
 
     // Startup bot when the fire button is pressed on the Android app.
@@ -183,9 +184,9 @@ void moveState() {
 
     if (checkCrossroad()) {
         State = CROSSROAD;
-        displayBigTextLine(6, "COOLIO");
         return;
     }
+
     // Play sound.
     makeSound();
 
@@ -248,7 +249,6 @@ void turnRobotDegrees(int degrees) {
 
     while(nMotorRunState[MOTOR_L] != runStateIdle) {
       // Do not continue.
-        displayBigTextLine(0, "Lekker draaien");
     }
     motor[MOTOR_L] = 0;
     motor[MOTOR_R] = 0;
@@ -260,7 +260,6 @@ void turnRobotDegrees(int degrees) {
 * @authors Nick Bout
 */
 void moveAroundObject() {
-    displayBigTextLine(0, "Test");
     const int robotLength = 540; // Robot length ~
     // Turn eyes 90 degrees
     turnFaceDegrees(-90); // Look right
@@ -274,7 +273,6 @@ void moveAroundObject() {
         motor[MOTOR_L] = 20;
         motor[MOTOR_R] = 20;
         while (SensorValue[SENSOR_S] < 50) {
-            displayBigTextLine(2, "Hierzo");
             // Follow object
             if (SensorValue[SENSOR_S] < 15) {
                 motor[MOTOR_L] = 25;
@@ -326,7 +324,6 @@ void moveAroundObject() {
 void turnLeft () {
     motor[MOTOR_L] = -15;
     motor[MOTOR_R] = 15;
-    displayTextLine(6, "TurnLefto");
     while (SensorValue[SENSOR_R] >= WhiteR) {
         wait1Msec(1);
     }
@@ -343,7 +340,6 @@ void turnLeft () {
 void turnRight() {
     motor[MOTOR_L] = 15;
     motor[MOTOR_R] = -15;
-    displayTextLine(6, "TurnRighto");
     while (SensorValue[SENSOR_L] >= WhiteL) {
         wait1Msec(1);
     }
@@ -376,16 +372,13 @@ void crossroadState() {
         // If commanded left and there is a left turn.
         turnLeft();
         State = MOVING;
-        displayBigTextLine(4, "LEFT");
     } else if (command == "RIGHT") {
         // If commanded right and there is a right turn.
         turnRight();
         State = MOVING;
-        displayBigTextLine(4, "LEFT");
     } else if (command == "FIRE") {
         // Choose a direction.
         turnRight();
-        displayBigTextLine(4, "LEFT OF RIGHT");
     }
 
     // Stop motors if not stopped already.
@@ -482,16 +475,15 @@ task main() {
     while(running) {
         switch(State) {
             case CROSSROAD:
-                displayBigTextLine(0, "Crossroad");
+                displayTextLine(0, "Crossroad");
                 crossroadState();
                 break;
             case INIT:
+                displayTextLine(0, "Init");
                 initState();
                 break;
             case MOVING:
                 displayTextLine(0, "Moving");
-                displayTextLine(2, "V L%d, R%d", SensorValue[SENSOR_L], SensorValue[SENSOR_R]);
-                displayTextLine(3, "O L%d, R%d", OffsetL, OffsetR);
                 moveState();
                 break;
             case RIP:
